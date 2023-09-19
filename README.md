@@ -79,11 +79,16 @@ prepare the new httpd certificate for import.   freeipa needs a pkcs#12 formatte
 `key.pem` this is the private key for the hosting cert
 `chain.pem` this contains the intermediate and root ca (in that order) in pem format
 
-then copy ipa.p12 to the freeipa container and run -
+then copy ipa.p12 to the freeipa container and run 
 
 ```
 ipa-server-certinstall -w -p {dir manager pwd here} -v ipa.p12
 ipa-certupdate
+```
+
+if everything worked, go ahead and clean up the certs, and proceed to enrolling the rest of your hosts to freeipa
+```
+rm -f *
 ```
 
 # Enrolling hosts to freeipa #
