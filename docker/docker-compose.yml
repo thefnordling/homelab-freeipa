@@ -13,6 +13,7 @@ services:
       - 88:88/udp
       - 464:464/udp
       - 123:123/udp
+    hostname: ipa
     cap_add:
       - SYS_TIME
       - NET_ADMIN
@@ -23,5 +24,4 @@ services:
       - "seccomp:unconfined"
     restart: unless-stopped
     volumes:
-      - /opt/freeipa/data:/data
-      - /opt/freeipa/logs:/logs
+      - /opt/freeipa/data:/data:Z
