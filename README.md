@@ -47,14 +47,7 @@ after the installation has been completed, stop the container and then run the c
 docker comopse up -d
 ```
 
-to prevent windows users from getting the annoying basic auth prompt, connect a bash to the container 
-
-`vi /etc/httpd/conf.d/no-login-popup.conf`
-
-paste in `BrowserMatch Windows gssapi-no-negotiate` and save the file
-
-then run `systemctl restart httpd`
-
+the no-login-popup.conf file (mounted as a volume in the compose file) will prevent nginx tryingt to grab a kerberos token from the browser (and showing an annoying basic-auth popup when you first go to the ipa ui)
 
 I was hoping to be able to have freeipa generate a CSR, which vault could sign generating an intermediate CA to be used for LDAP known by my PKI setup; however - that isn't possible at the moment since freeipa is only able to generate a CSR or support a CA using UTF8STRING encoded properties (organization and commonName) - but vault is only able to support PRINTABLESTRING encoded properties.   
 
@@ -69,7 +62,7 @@ ipa-cacert-manage install intermediate.pem
 ipa-certupdate
 ```
 
-it will take a minute for `ipa-certupdate` to finish
+it will take a minute (quite a few actually) for `ipa-certupdate` to finish
 
 prepare the new httpd certificate for import.   freeipa needs a pkcs#12 formatted certificate (ugh) so use openssl to combine everything into a pkcs#12 file that will work
 
@@ -86,7 +79,7 @@ ipa-server-certinstall -w -p {dir manager pwd here} -v ipa.p12
 ipa-certupdate
 ```
 
-if everything worked, go ahead and clean up the certs, and proceed to enrolling the rest of your hosts to freeipa
+if everything worked, go ahead and clean up the certs, and proceed to enrolling the rest of your hosts to freeipas
 ```
 rm -f *
 ```
@@ -97,9 +90,20 @@ I'll run through the steps i used to configure my nginx reverse proxy `proxy.hom
 
 update the hostname to the FQDN
 
+edit /etc/cloud/cloud.cfg and set the parameter "preserve_hostname" from "false" to "true"
+
 ```
 sudo hostname proxy.home.arpa
-sudo apt-get install freeipa-client -y
+```
+
+check /etc/hostname and update it to the hostname part (proxy in above example)
+
+then install the freeipa client
+
+```
+sudo apt-get install sssd-tools freeipa-client -y
+
+
 ```
 this will kick off the install - we're going to redo it so it doesn't matter what you enter at the prompts
 
@@ -118,3 +122,7 @@ when prompted `User authorized to enroll computers:` enter admin
 then do the password you set up during the ipa server install
 
 you should be good - now, navigate back to the ipa server, go into hosts and confirm proxy.home.arpa is now shown there
+
+to force a cache reload (on the client) run `sudo sss_cache -E`
+
+to remove a user from the client host not sync'd from freeipa, run `userdel {username}`

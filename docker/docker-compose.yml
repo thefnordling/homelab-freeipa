@@ -25,3 +25,4 @@ services:
     restart: unless-stopped
     volumes:
       - /opt/freeipa/data:/data:Z
+      - ./no-login-poup.conf:/etc/httpd/conf.d/no-login-popup.conf
